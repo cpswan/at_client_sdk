@@ -8,14 +8,15 @@ import 'at_demo_credentials.dart' as demo_credentials;
 import 'set_encryption_keys.dart';
 
 void main() {
+  AtClient? atClient;
   test('put method - create a key sharing to other atsign', () async {
     var atsign = '@alice🛠';
     var preference = getAlicePreference(atsign);
     await AtClientImpl.createClient(atsign, 'me', preference);
-    var atClient = await AtClientImpl.getClient(atsign);
-    atClient.getSyncManager().init(atsign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
+    atClient= await AtClientImpl.getClient(atsign);
+    atClient?.getSyncManager()!.init(atsign, preference,
+        atClient!.getRemoteSecondary(), atClient!.getLocalSecondary());
+    await atClient?.getSyncManager()!.sync();
     // To setup encryption keys
     await setEncryptionKeys(atsign, preference);
     // phone.me@alice🛠
@@ -23,12 +24,13 @@ void main() {
       ..key = 'phone'
       ..sharedWith = '@bob🛠';
     var value = '+1 100 200 300';
-    var putResult = await atClient.put(phoneKey, value);
+    var putResult = await atClient?.put(phoneKey, value);
     expect(putResult, true);
-    var getResult = await atClient.get(phoneKey);
-    expect(getResult.value, value);
-  });
-  tearDown(() async => await tearDownFunc());
+    var getResult = await atClient?.get(phoneKey);
+    expect(getResult?.value, value);
+  }, timeout: Timeout(Duration(seconds: 300)));
+  Future.delayed(Duration(seconds: 150));
+  // tearDown(() async => await tearDownFunc());
 }
 
 Future<void> tearDownFunc() async {

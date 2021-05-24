@@ -8,8 +8,8 @@ import 'package:test/test.dart';
 import 'at_demo_credentials.dart' as demo_credentials;
 import 'set_encryption_keys.dart';
 
-AtClientImpl aliceClient;
-AtClientImpl bobClient;
+AtClient? aliceClient;
+AtClient? bobClient;
 
 void main() {
 
@@ -18,9 +18,9 @@ void main() {
     var firstAtsignPreference = getAlicePreference(firstAtsign);
     await AtClientImpl.createClient(firstAtsign, 'me', firstAtsignPreference);
     aliceClient = await AtClientImpl.getClient(firstAtsign);
-    aliceClient.getSyncManager().init(firstAtsign, firstAtsignPreference,
-        aliceClient.getRemoteSecondary(), aliceClient.getLocalSecondary());
-    await aliceClient.getSyncManager().sync();
+    aliceClient!.getSyncManager()!.init(firstAtsign, firstAtsignPreference,
+        aliceClient!.getRemoteSecondary(), aliceClient!.getLocalSecondary());
+    await aliceClient!.getSyncManager()!.sync();
     // To setup encryption keys
     await setEncryptionKeys(firstAtsign, firstAtsignPreference);
 
@@ -28,9 +28,9 @@ void main() {
     var secondAtsignPreference = getBobPreference(secondAtsign);
     await AtClientImpl.createClient(secondAtsign, 'me', secondAtsignPreference);
     bobClient = await AtClientImpl.getClient(secondAtsign);
-    bobClient.getSyncManager().init(secondAtsign, secondAtsignPreference,
-        bobClient.getRemoteSecondary(), bobClient.getLocalSecondary());
-    await bobClient.getSyncManager().sync();
+    bobClient!.getSyncManager()!.init(secondAtsign, secondAtsignPreference,
+        bobClient!.getRemoteSecondary(), bobClient!.getLocalSecondary());
+    await bobClient!.getSyncManager()!.sync();
     await setEncryptionKeys(secondAtsign, secondAtsignPreference);
   };
 
@@ -42,11 +42,11 @@ void main() {
       ..sharedWith = '@bob🛠';
     var value = 'Atsign';
     // @alice🛠 notifying company key to @bob🛠
-    var notifyResult = await aliceClient.notify(companyKey, value, OperationEnum.update);
+    var notifyResult = await aliceClient!.notify(companyKey, value, OperationEnum.update);
     expect(notifyResult, true);
     await Future.delayed(Duration(seconds: 15));
     // @bob🛠 fetching the notifications of @alice🛠
-    var notifyListResult = await bobClient.notifyList(regex: '@alice🛠');
+    var notifyListResult = await bobClient!.notifyList(regex: '@alice🛠');
     assert(notifyListResult.contains('"key":"@bob🛠:company@alice🛠"'));
   });
 
@@ -57,11 +57,10 @@ void main() {
       ..key = 'role'
       ..sharedWith = '@bob🛠';
     var value = 'Developer';
-    var notifyResult = await aliceClient.notify(roleKey, value, OperationEnum.update, messageType: MessageTypeEnum.key,strategy: StrategyEnum.all);
+    var notifyResult = await aliceClient!.notify(roleKey, value, OperationEnum.update, messageType: MessageTypeEnum.key,strategy: StrategyEnum.all);
     expect(notifyResult, true);
     await Future.delayed(Duration(seconds: 10));
-    var notifyListResult = await bobClient.notifyList(regex: '@alice🛠');
-    print(notifyListResult);
+    var notifyListResult = await bobClient!.notifyList(regex: '@alice🛠');
     assert(notifyListResult.contains('"key":"@bob🛠:role@alice🛠"'));
   });
 
@@ -73,10 +72,10 @@ void main() {
       ..sharedWith = '@bob🛠';
     var value = 'Atsign';
     // notify:delete:@bob🛠:company@alice🛠:Atsign
-    var notifyResult = await aliceClient.notify(companyKey, value, OperationEnum.delete);
+    var notifyResult = await aliceClient!.notify(companyKey, value, OperationEnum.delete);
     expect(notifyResult, true);
     await Future.delayed(Duration(seconds: 10));
-    var notifyListResult = await bobClient.notifyList(regex: '@alice🛠');
+    var notifyListResult = await bobClient!.notifyList(regex: '@alice🛠');
     assert(notifyListResult.contains('"key":"@bob🛠:company@alice🛠","value":null,"operation":"delete"'));
   });
 
@@ -87,10 +86,10 @@ void main() {
       ..key = 'mail'
       ..sharedWith = jsonEncode(['@bob🛠','@purnima🛠']);
     var value = 'alice@atsign.com';
-    var notifyResult = await aliceClient.notifyAll(mailKey, value, OperationEnum.update);
+    var notifyResult = await aliceClient!.notifyAll(mailKey, value, OperationEnum.update);
     assert(notifyResult.contains('{"@bob🛠":true,"@purnima🛠":true}'));
     await Future.delayed(Duration(seconds: 10));
-    var notifyListResult = await bobClient.notifyList(regex: '@alice🛠');
+    var notifyListResult = await bobClient!.notifyList(regex: '@alice🛠');
     assert(notifyListResult.contains('"key":"@bob🛠:mail@alice🛠"'));
   });
 
@@ -101,13 +100,13 @@ void main() {
       ..key = 'mobile'
       ..sharedWith = jsonEncode(['@bob🛠','@purnima🛠']);
     var value = '+91 9092732972';
-    var notifyResult = await aliceClient.notifyAll(mobileKey, value, OperationEnum.delete);
+    var notifyResult = await aliceClient!.notifyAll(mobileKey, value, OperationEnum.delete);
     assert(notifyResult.contains('{"@bob🛠":true,"@purnima🛠":true}'));
     await Future.delayed(Duration(seconds: 10));
-    var notifyListResult = await bobClient.notifyList(regex: '@alice🛠');
+    var notifyListResult = await bobClient!.notifyList(regex: '@alice🛠');
     assert(notifyListResult.contains('"key":"@bob🛠:mobile@alice🛠","value":null,"operation":"delete"'));
   });
-  tearDown(() async => await tearDownFunc());
+  // tearDown(() async => await tearDownFunc());
 }
 
 Future<void> tearDownFunc() async {

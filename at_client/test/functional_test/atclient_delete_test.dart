@@ -8,16 +8,16 @@ import 'at_demo_credentials.dart' as demo_credentials;
 import 'set_encryption_keys.dart';
 
 void main() {
-  AtClientImpl aliceClient;
+  AtClient? aliceClient;
 
   Future<void> setUpClient() async {
     var firstAtsign = '@alice🛠';
     var firstAtsignPreference = getAlicePreference(firstAtsign);
     await AtClientImpl.createClient(firstAtsign, 'me', firstAtsignPreference);
     aliceClient = await AtClientImpl.getClient(firstAtsign);
-    aliceClient.getSyncManager().init(firstAtsign, firstAtsignPreference,
-        aliceClient.getRemoteSecondary(), aliceClient.getLocalSecondary());
-    await aliceClient.getSyncManager().sync();
+    aliceClient!.getSyncManager()!.init(firstAtsign, firstAtsignPreference,
+        aliceClient!.getRemoteSecondary(), aliceClient!.getLocalSecondary());
+    await aliceClient!.getSyncManager()!.sync();
     // To setup encryption keys
     await setEncryptionKeys(firstAtsign, firstAtsignPreference);
   }
@@ -31,7 +31,7 @@ void main() {
       ..namespace = '.me'
       ..metadata = metadata
       ..sharedWith = '@bob🛠';
-    var deleteResult = await aliceClient.delete(phoneKey);
+    var deleteResult = await aliceClient!.delete(phoneKey);
     expect(deleteResult, true);
   });
 
@@ -41,10 +41,10 @@ void main() {
     var nameKey = AtKey()
       ..key = 'name'
       ..metadata = metadata;
-    var deleteResult = await aliceClient.delete(nameKey);
+    var deleteResult = await aliceClient!.delete(nameKey);
     expect(deleteResult, true);
   });
-  tearDown(() async => await tearDownFunc());
+  // tearDown(() async => await tearDownFunc());
 }
 
 Future<void> tearDownFunc() async {

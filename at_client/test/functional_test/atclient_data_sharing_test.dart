@@ -6,22 +6,20 @@ import 'package:test/test.dart';
 import 'at_demo_credentials.dart' as demo_credentials;
 import 'set_encryption_keys.dart';
 
-var maxRetryCount = 5;
+var maxRetryCount = 6;
 var retryCount = 1;
 
-var atClientInstance;
-AtClientImpl aliceClient;
-AtClientImpl bobClient;
-
+AtClient? aliceClient;
+AtClient? bobClient;
 void main() {
   Future<void> setUpClient() async {
     var firstAtsign = '@alice🛠';
     var firstAtsignPreference = getAlicePreference(firstAtsign);
     await AtClientImpl.createClient(firstAtsign, 'me', firstAtsignPreference);
-    aliceClient = await AtClientImpl.getClient(firstAtsign);
-    aliceClient.getSyncManager().init(firstAtsign, firstAtsignPreference,
-        aliceClient.getRemoteSecondary(), aliceClient.getLocalSecondary());
-    await aliceClient.getSyncManager().sync();
+    aliceClient = (await AtClientImpl.getClient(firstAtsign))!;
+    aliceClient!.getSyncManager()!.init(firstAtsign, firstAtsignPreference,
+        aliceClient!.getRemoteSecondary(), aliceClient!.getLocalSecondary());
+    await aliceClient!.getSyncManager()!.sync();
     // To setup encryption keys
     await setEncryptionKeys(firstAtsign, firstAtsignPreference);
 
@@ -29,9 +27,9 @@ void main() {
     var secondAtsignPreference = getBobPreference(secondAtsign);
     await AtClientImpl.createClient(secondAtsign, 'me', secondAtsignPreference);
     bobClient = await AtClientImpl.getClient(secondAtsign);
-    bobClient.getSyncManager().init(secondAtsign, secondAtsignPreference,
-        bobClient.getRemoteSecondary(), bobClient.getLocalSecondary());
-    await bobClient.getSyncManager().sync();
+    bobClient!.getSyncManager()!.init(secondAtsign, secondAtsignPreference,
+        bobClient!.getRemoteSecondary(), bobClient!.getLocalSecondary());
+    await bobClient!.getSyncManager()!.sync();
     await setEncryptionKeys(secondAtsign, secondAtsignPreference);
   };
 
@@ -49,7 +47,7 @@ void main() {
       ..metadata = metadata;
     var locationvalue = 'USA';
     // @alice🛠 sharing location key with @bob🛠
-    var locationResult = await aliceClient.put(locationKey, locationvalue);
+    var locationResult = await aliceClient!.put(locationKey, locationvalue);
     expect(locationResult, true);
     var getMetadata = Metadata()..isCached = true;
     // lookup:@alice🛠
@@ -57,15 +55,15 @@ void main() {
       ..key = 'location'
       ..sharedBy = '@alice🛠'
       ..metadata = getMetadata;
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     // @bob🛠 fetching location key which is shared by @alice🛠
     var result = await waitForResult(bobClient, getLocationKey);
     expect(result.value, locationvalue);
-    var deleteResult = await aliceClient.delete(locationKey);
+    var deleteResult = await aliceClient!.delete(locationKey);
     expect(deleteResult, true);
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     await Future.delayed(Duration(seconds: 15));
-    result = await bobClient.get(getLocationKey);
+    result = await bobClient!.get(getLocationKey);
     expect(result.value, null);
   }, timeout: Timeout(Duration(seconds: 120)));
 
@@ -81,14 +79,14 @@ void main() {
       ..metadata = metadata;
     var aboutvalue = 'Photographer';
     // @alice🛠 sharing about key with @bob🛠
-    var aboutResult = await aliceClient.put(aboutKey, aboutvalue);
+    var aboutResult = await aliceClient!.put(aboutKey, aboutvalue);
     expect(aboutResult, true);
     var getMetadata = Metadata()..isCached = true;
     var getaboutKey = AtKey()
       ..key = 'about'
       ..sharedBy = '@alice🛠'
       ..metadata = getMetadata;
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     // @bob🛠 fetching about key which is shared by @alice🛠
     var result = await waitForResult(bobClient, getaboutKey);
     expect(result.value, aboutvalue);
@@ -103,7 +101,7 @@ void main() {
       ..metadata = metadata;
     var emailValue = 'alice@yahoo.com';
     // @alice🛠 sharing email key with @bob🛠
-    var emailResult = await aliceClient.put(emailKey, emailValue);
+    var emailResult = await aliceClient!.put(emailKey, emailValue);
     expect(emailResult, true);
     // @bob🛠 fetching the email key shared by @alice🛠
     var getMetadata = Metadata()..isCached = false;
@@ -111,13 +109,13 @@ void main() {
       ..key = 'email'
       ..sharedBy = '@alice🛠'
       ..metadata = getMetadata;
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     var result = await waitForResult(bobClient, getEmailKey);
     expect(result.value, emailValue);
     // @alice🛠 deleting the email key shared with @bob🛠
-    var emailDeleteResult = await aliceClient.delete(getEmailKey);
+    var emailDeleteResult = await aliceClient!.delete(getEmailKey);
     expect(emailDeleteResult, true);
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     // @bob🛠 fetching the email key
     result = await waitForResult(bobClient, getEmailKey);
     expect(result.value, emailValue);
@@ -134,7 +132,7 @@ void main() {
     var usernameValue = 'alice123';
     var updatedusername = 'AliceBuffay';
     // @alice🛠 sharing a key with @bob🛠
-    var usernameResult = await aliceClient.put(usernameKey, usernameValue);
+    var usernameResult = await aliceClient!.put(usernameKey, usernameValue);
     expect(usernameResult, true);
     // @bob fetching keys shared by @alice
     var getMetadata = Metadata()..isCached = true;
@@ -143,15 +141,15 @@ void main() {
       ..sharedBy = '@alice🛠'
       ..metadata = getMetadata;
     // bob🛠 fetching username key shared by @alice🛠
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     var result = await waitForResult(bobClient, getusernameKey);
     expect(result.value, usernameValue);
     // @alice updating the username key shared with @bob
     var updateusernameResult =
-        await aliceClient.put(usernameKey, updatedusername);
+        await aliceClient!.put(usernameKey, updatedusername);
     expect(updateusernameResult, true);
     // @bob fetching updated key shared by @alice
-    await bobClient.getSyncManager().sync();
+    await bobClient!.getSyncManager()!.sync();
     await Future.delayed(Duration(seconds: 5));
     result = await waitForResult(bobClient, getusernameKey);
     expect(result.value, updatedusername);
@@ -168,15 +166,15 @@ void main() {
       ..metadata = metadata;
     var numberValue = '040-27502292';
     //  @bob🛠 sharing landline key with @alice🛠
-    var numberResult = await bobClient.put(numberKey, numberValue);
+    var numberResult = await bobClient!.put(numberKey, numberValue);
     expect(numberResult, true);
     var getMetadata = Metadata()..isCached = true;
     var getNumberKey = AtKey()
       ..key = 'landlineTest'
       ..sharedBy = '@bob🛠'
       ..metadata = getMetadata;
-    await aliceClient.getSyncManager().sync();
-    var getnumberResult = await waitForResult(aliceClient, getNumberKey);
+    await aliceClient!.getSyncManager()!.sync();
+    var getnumberResult = (await waitForResult(aliceClient, getNumberKey));
     expect(getnumberResult.value, numberValue);
 
     var otpKey = AtKey()
@@ -184,13 +182,13 @@ void main() {
       ..metadata = metadata
       ..sharedWith = '@bob🛠';
     var otpValue = '9900';
-    var otpResult = await aliceClient.put(otpKey, otpValue);
+    var otpResult = await aliceClient!.put(otpKey, otpValue);
     expect(otpResult, true);
     var getOtpKey = AtKey()
       ..key = 'otpTest'
       ..sharedBy = '@alice🛠'
       ..metadata = getMetadata;
-    await aliceClient.getSyncManager().sync();
+    await aliceClient!.getSyncManager()!.sync();
     var getResult = await waitForResult(bobClient, getOtpKey);
     expect(getResult.value, otpValue);
   }, timeout: Timeout(Duration(seconds: 60)));
@@ -203,11 +201,11 @@ Future<void> tearDownFunc() async {
   }
 }
 
-Future<AtValue> waitForResult(AtClientImpl atClient, AtKey key) async {
+Future<AtValue> waitForResult(AtClient? atClient, AtKey key) async {
   var result;
   while (true) {
     try {
-      await atClient.getSyncManager().sync();
+      await atClient!.getSyncManager()!.sync();
       result = await atClient.get(key);
       if (result.value != null || retryCount > maxRetryCount) {
         break;

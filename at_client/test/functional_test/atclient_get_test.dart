@@ -7,85 +7,60 @@ import 'package:test/test.dart';
 import 'at_demo_credentials.dart' as demo_credentials;
 import 'set_encryption_keys.dart';
 
+AtClient? atClient;
 void main() {
-  setUp(() async {
-    var atsign = '@alice🛠';
-    var preference = getAlicePreference(atsign);
-    await AtClientImpl.createClient(atsign, 'me', preference);
-    var atClient = await AtClientImpl.getClient(atsign);
-    atClient.getSyncManager().init(atsign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
+  Future<void> setUpClient() async {
+    var firstAtsign = '@alice🛠';
+    var firstAtsignPreference = getAlicePreference(firstAtsign);
+    await AtClientImpl.createClient(firstAtsign, 'me', firstAtsignPreference);
+    atClient = (await AtClientImpl.getClient(firstAtsign))!;
+    atClient!.getSyncManager()!.init(firstAtsign, firstAtsignPreference,
+        atClient!.getRemoteSecondary(), atClient!.getLocalSecondary());
+    await atClient!.getSyncManager()!.sync();
     // To setup encryption keys
-    await setEncryptionKeys(atsign, preference);
-  });
+    await setEncryptionKeys(firstAtsign, firstAtsignPreference);
+  }
 
   test('get method - fetching a public key', () async {
-    var atsign = '@alice🛠';
-    var preference = getAlicePreference(atsign);
-    await AtClientImpl.createClient(atsign, 'me', preference);
-    var atClient = await AtClientImpl.getClient(atsign);
-    atClient.getSyncManager().init(atsign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
-    // To setup encryption keys
-    await setEncryptionKeys(atsign, preference);
+    await setUpClient();
     // phone.me@alice🛠
     var metadata = Metadata()..isPublic = true;
     var twitterKey = AtKey()
       ..key = 'twitter'
       ..metadata = metadata;
     var value = 'alice_123';
-    var putResult = await atClient.put(twitterKey, value);
+    var putResult = await atClient!.put(twitterKey, value);
     expect(putResult, true);
-    var getResult = await atClient.get(twitterKey);
+    var getResult = await atClient!.get(twitterKey);
     expect(getResult.value, value);
   });
-  tearDown(() async => await tearDownFunc());
 
   test('get method - fetching a public key', () async {
-    var atsign = '@alice🛠';
-    var preference = getAlicePreference(atsign);
-    await AtClientImpl.createClient(atsign, 'me', preference);
-    var atClient = await AtClientImpl.getClient(atsign);
-    atClient.getSyncManager().init(atsign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
-    // To setup encryption keys
-    await setEncryptionKeys(atsign, preference);
+    await setUpClient();
     // phone.me@alice🛠
     var metadata = Metadata()..isPublic = true;
     var twitterKey = AtKey()
       ..key = 'twitter'
       ..metadata = metadata;
     var value = 'alice_123';
-    var putResult = await atClient.put(twitterKey, value);
+    var putResult = await atClient!.put(twitterKey, value);
     expect(putResult, true);
-    var getResult = await atClient.get(twitterKey);
+    var getResult = await atClient!.get(twitterKey);
     expect(getResult.value, value);
   });
-  tearDown(() async => await tearDownFunc());
 
   test('get method - fetching a private key', () async {
-    var atsign = '@alice🛠';
-    var preference = getAlicePreference(atsign);
-    await AtClientImpl.createClient(atsign, 'me', preference);
-    var atClient = await AtClientImpl.getClient(atsign);
-    atClient.getSyncManager().init(atsign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
-    // To setup encryption keys
-    await setEncryptionKeys(atsign, preference);
+    await setUpClient();
     // phone.me@alice🛠
-    var metadata = Metadata() ..ttr = 8640000;
+    var metadata = Metadata()..ttr = 8640000;
     var cityKey = AtKey()
       ..key = 'city'
       ..sharedWith = '@bob🛠'
       ..metadata = metadata;
     var value = 'Hyderabad';
-    var putResult = await atClient.put(cityKey, value);
+    var putResult = await atClient!.put(cityKey, value);
     expect(putResult, true);
-    var getResult = await atClient.get(cityKey);
+    var getResult = await atClient!.get(cityKey);
     expect(getResult.value, value);
   });
 }

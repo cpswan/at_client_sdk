@@ -6,14 +6,15 @@ import 'at_demo_credentials.dart' as demo_credentials;
 import 'set_encryption_keys.dart';
 
 void main() {
+  AtClient? atClient;
   test('put method - create a key sharing to other atsign', () async {
     var atsign = '@alice🛠';
     var preference = getAlicePreference(atsign);
     await AtClientImpl.createClient(atsign, 'me', preference);
-    AtClientImpl atClient = await AtClientImpl.getClient(atsign);
-    atClient.getSyncManager().init(atsign, preference,
-        atClient.getRemoteSecondary(), atClient.getLocalSecondary());
-    await atClient.getSyncManager().sync();
+    atClient = await AtClientImpl.getClient(atsign);
+    atClient?.getSyncManager()!.init(atsign, preference,
+        atClient!.getRemoteSecondary(), atClient!.getLocalSecondary());
+    await atClient?.getSyncManager()!.sync();
     // To setup encryption keys
     await setEncryptionKeys(atsign, preference);
     // phone.me@alice🛠
@@ -22,16 +23,17 @@ void main() {
       ..sharedWith = '@bob🛠';
     var value = 'USA';
     // put locationKey using dedicated connection
-    var putResult = await atClient.put(locationKey, value, isDedicated: true);
+    var putResult = await atClient?.put(locationKey, value, isDedicated: true);
     expect(putResult, true);
     // get locationKey value using dedicated connection
-    var getResult = await atClient.get(locationKey, isDedicated: true);
-    expect(getResult.value, value);
+    var getResult = await atClient?.get(locationKey, isDedicated: true);
+    expect(getResult?.value, value);
     // delete locationKey using dedicated connection
-    var deleteResult = await atClient.delete(locationKey, isDedicated: true);
+    var deleteResult = await atClient?.delete(locationKey, isDedicated: true);
     expect(deleteResult, true);
   });
-  tearDown(() async => await tearDownFunc());
+  Future.delayed(Duration(seconds: 150));
+  // tearDown(() async => await tearDownFunc());
 }
 
 Future<void> tearDownFunc() async {
