@@ -601,8 +601,15 @@ class AtClientImpl implements AtClient {
       PriorityEnum priority,
       StrategyEnum strategy,
       int latestN,
-      String notifier = SYSTEM,
+      String notifier,
       bool isDedicated = false}) async {
+    if (strategy == StrategyEnum.latest && notifier.isEmpty) {
+      return Future.error(AtClientException(
+          'AT0003', 'Notifier cannot be null on strategy latest'));
+    }
+    if (strategy == StrategyEnum.all) {
+      notifier = SYSTEM;
+    }
     var notifyKey = atKey.key;
     var metadata = atKey.metadata;
     var sharedWith = atKey.sharedWith;
