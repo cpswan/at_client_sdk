@@ -603,10 +603,12 @@ class AtClientImpl implements AtClient {
       int latestN,
       String notifier,
       bool isDedicated = false}) async {
+    // For notification strategy latest, notifier ID can not be null.
     if (strategy == StrategyEnum.latest && notifier.isEmpty) {
       return Future.error(AtClientException(
           'AT0003', 'Notifier cannot be null on strategy latest'));
     }
+    // For notification strategy all, default notifier -'system' is assigned.
     if (strategy == StrategyEnum.all) {
       notifier = SYSTEM;
     }
